@@ -30,6 +30,9 @@ public class Reaper
         System.out.println("How long should each name be? (ex: 10-15)");
         int nameLengthValue = input.nextInt();
 
+        /*
+         * Resolve annoying stackoverflow issue, never use below 10 for obf mappings anyway, it isn't very good.
+         */
         if (nameLengthValue < 10) {
             nameLengthValue = 10;
             System.out.println("Lower values may cause errors due to the limited amount of combinations that lower values can give, setting the value to 10 just in case.");
