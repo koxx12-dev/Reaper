@@ -1,12 +1,12 @@
-package me.itsmefrenzy.reaper;
+package gq.noxiuam.reaper;
 
-import me.itsmefrenzy.reaper.util.StringUtil;
+import gq.noxiuam.reaper.util.StringUtil;
 
 import lombok.*;
 import java.io.*;
 import java.util.Scanner;
 
-public class Reaper
+public class Main
 {
 
     /*

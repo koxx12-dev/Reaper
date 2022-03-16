@@ -1,6 +1,6 @@
-package me.itsmefrenzy.reaper.util;
+package gq.noxiuam.reaper.util;
 
-import me.itsmefrenzy.reaper.Reaper;
+import gq.noxiuam.reaper.Main;
 
 import java.util.*;
 
@@ -37,7 +37,7 @@ public class StringUtil
         if (generatedNames.contains(String.valueOf(obfuscatedName)))
         {
             obfuscatedName = new StringBuilder(generateName(nameLength));
-            if (Reaper.debug)
+            if (Main.debug)
                 System.out.println("Found duplicate! New Name: " + obfuscatedName);
         }
 
