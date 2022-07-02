@@ -38,9 +38,6 @@ public class Main
             System.out.println("Lower values may cause errors due to the limited amount of combinations that lower values can give, setting the value to 10 just in case.");
         }
 
-        /*
-         * Creates a BufferedWriter for the mapping file.
-         */
         System.out.println("Generating mapping...");
 
         /*
@@ -52,6 +49,9 @@ public class Main
             System.out.println("Found an old mapping, removing it!");
         }
 
+        /*
+         * Creates a BufferedWriter for the mapping file.
+         */
         BufferedWriter writer = new BufferedWriter(new FileWriter(file.getName()));
 
         /*
