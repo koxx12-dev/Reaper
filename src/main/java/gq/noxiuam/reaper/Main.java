@@ -25,13 +25,11 @@ public class Main
      * @SneakyThrows is for the BufferedWriter.
      */
     @SneakyThrows
-    public static void main(String[] args)
-    {
-        File file = new File("mapping.csv");
-
+    public static void main(String[] args) {
         OptionParser parser = new OptionParser();
         parser.accepts("debug");
         parser.accepts("allowDuplicates");
+        parser.accepts("file").withRequiredArg().ofType(File.class).defaultsTo(new File("mapping.csv"));
         parser.accepts("length").withRequiredArg().ofType(Integer.class).defaultsTo(25);
         parser.accepts("amount").withRequiredArg().ofType(Integer.class).defaultsTo(5500);
         parser.accepts("pattern").withRequiredArg().defaultsTo("Il");
@@ -39,6 +37,7 @@ public class Main
         OptionSet options = parser.parse(args);
         debug = options.has("debug");
         boolean allowDuplicates = options.has("allowDuplicates");
+        File file = (File) options.valueOf("file");
         Integer length = (Integer) options.valueOf("length");
         Integer amount = (Integer) options.valueOf("amount");
         String pattern = (String) options.valueOf("pattern");
