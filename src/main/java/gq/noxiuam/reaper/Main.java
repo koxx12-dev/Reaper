@@ -1,11 +1,17 @@
 package gq.noxiuam.reaper;
 
 import gq.noxiuam.reaper.util.StringUtil;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import lombok.SneakyThrows;
 
-import lombok.*;
-import java.io.*;
-import java.util.Scanner;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 
+/**
+ * @author Noxiuam (github.com/Noxiuam)
+ */
 public class Main
 {
 
@@ -22,50 +28,46 @@ public class Main
     public static void main(String[] args)
     {
         File file = new File("mapping.csv");
-        Scanner input = new Scanner(System.in);
 
-        System.out.println("How many names do you want to generate? (ex: 100)");
-        String nameAmountValue = input.nextLine();
+        OptionParser parser = new OptionParser();
+        parser.accepts("debug");
+        parser.accepts("allowDuplicates");
+        parser.accepts("length").withRequiredArg().ofType(Integer.class).defaultsTo(25);
+        parser.accepts("amount").withRequiredArg().ofType(Integer.class).defaultsTo(5500);
+        parser.accepts("pattern").withRequiredArg().defaultsTo("Il");
 
-        System.out.println("How long should each name be? (ex: 10-15)");
-        int nameLengthValue = input.nextInt();
+        OptionSet options = parser.parse(args);
+        debug = options.has("debug");
+        boolean allowDuplicates = options.has("allowDuplicates");
+        Integer length = (Integer) options.valueOf("length");
+        Integer amount = (Integer) options.valueOf("amount");
+        String pattern = (String) options.valueOf("pattern");
+
+        // Resolve annoying stackoverflow issue, never use below 10 for obf mappings anyway, it isn't very good.
+        if (length < 10) {
+            length = 10;
+            System.out.println("[WARNING] Lower values may cause errors due to the limited amount of combinations that lower values can give! Setting the value to 10 just in case.");
+        }
 
         /*
-         * Resolve annoying stackoverflow issue, never use below 10 for obf mappings anyway, it isn't very good.
+         * Check if there is an old mapping in the same directory where the new one will be generated.
+         * If there is, then it removes it, this is important that this works otherwise it will just write to the old one.
          */
-        if (nameLengthValue < 10) {
-            nameLengthValue = 10;
-            System.out.println("Lower values may cause errors due to the limited amount of combinations that lower values can give, setting the value to 10 just in case.");
+        if (file.exists() && file.delete()) {
+            System.out.println("[Reaper] Removed old mapping file");
         }
+
+        // Create a BufferedWriter for the mapping file.
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file.getName()));
 
         System.out.println("Generating mapping...");
 
-        /*
-         * Checks to see if there is an old mapping in the same directory where the new one will be generated.
-         * If there is, then it removes it, this is important that this works otherwise it will just write to the old one.
-         */
-        if (file.exists() && file.delete() && debug)
-        {
-            System.out.println("Found an old mapping, removing it!");
+        // Writes a new line until it reaches the maximum amount defined.
+        for (int i = 0; i < amount; i++) {
+            writer.write(StringUtil.generateName(length, pattern, allowDuplicates) + (i == amount - 1 ? "" : "\n"));
         }
 
-        /*
-         * Creates a BufferedWriter for the mapping file.
-         */
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file.getName()));
-
-        /*
-         * A for loop that writes a new line until it reaches the "nameAmountValue"
-         * It writes to the file a randomly generated String of I's and lowercase L's, followed by a line break.
-         */
-        for (int i = 0; i < Integer.parseInt(nameAmountValue); i++)
-        {
-            writer.write(StringUtil.generateName(nameLengthValue) + (i == Integer.parseInt(nameAmountValue) - 1 ? "" : "\n"));
-        }
-
-        /*
-         * Closes the BufferedWriter.
-         */
+        // Close the BufferedWriter.
         writer.close();
     }
 }
