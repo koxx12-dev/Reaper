@@ -8,7 +8,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Check if commit is a merge or direct push
+      - name: Check if commit is a merge or direct push !!!!!!!!
         id: check_merge
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/preview'
         run: |
