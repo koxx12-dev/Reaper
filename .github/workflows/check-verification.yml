@@ -8,6 +8,36 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Check if commit is a merge or direct push
+        id: check_merge
+        if: contains(['refs/heads/master', 'refs/heads/beta', 'refs/heads/dev', 'refs/heads/preview'], github.ref)
+        run: |
+          # Set the necessary environment variables
+          REPO_FULL_NAME=${{ github.event.repository.full_name }}
+          COMMIT_SHA=${{ github.event.after }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+          # Use the GitHub API to retrieve information about the commit that was just pushed
+          COMMIT_DATA=$(curl \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO_FULL_NAME/commits/$COMMIT_SHA")
+
+          # Check if the commit is a merge commit by looking at the `parents` array in the commit data
+          PARENTS_COUNT=$(echo $COMMIT_DATA | jq '.parents | length')
+          if [ $PARENTS_COUNT -gt 1 ]; then
+            echo "::set-output name=merge::true"
+
+            # Check if the commit has a properly formatted title
+            TITLE=$(echo $COMMIT_DATA | jq -r '.commit.message' | head -n 1)
+            if [[ $TITLE =~ ^(Feature|Fix|Auth|):[[:space:]][A-Z].*\(#[0-9]+\)$ ]]; then
+              echo "::set-output name=formatted_title::true"
+            else
+              echo "::set-output name=formatted_title::false"
+            fi
+          else
+            echo "::set-output name=merge::false"
+          fi
       - name: Check if commit is verified
         id: check
         run: |
@@ -37,12 +67,45 @@ jobs:
           
           # Get the original commit message
           ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD)
-  
+          
           # Use Git to create a new revert commit that undoes the changes introduced by the unverified commit
           git revert --no-edit HEAD~1..HEAD
 
           # Amend the revert commit with a custom message
           git commit --amend -m "Revert (Unverified Commit): $ORIGINAL_COMMIT_MESSAGE"
+
+      - name: Revert unformatted merge commits
+        if: steps.check_merge.outputs.merge == 'true' && steps.check_merge.outputs.formatted_title == 'false'
+        run: |
+          # Set the Git user name and email
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Get the original commit message
+          ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD)
+      
+          # Use Git to create a new revert commit that undoes the changes introduced by the unverified commit
+          git revert --no-edit HEAD
+      
+          # Amend the revert commit with a custom message
+          git commit --amend -m "Revert (Unprofessional Commit): $ORIGINAL_COMMIT_MESSAGE"
+
+      - name: Revert direct push commits
+        if: steps.check_merge.outputs.merge == 'false'
+        run: |
+          # Set the Git user name and email
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Get the original commit message
+          ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD)
+          
+          # Use Git to create a new revert commit that undoes the changes introduced by the unverified commit
+          git revert --no-edit HEAD
+          
+          # Amend the revert commit with a custom message
+          git commit --amend -m "Revert (Direct Push): $ORIGINAL_COMMIT_MESSAGE"
+      
 
       - name: Add comment
         if: steps.check.outputs.verified == 'false'
