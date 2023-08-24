@@ -53,7 +53,7 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
           # Set the comment body
-          COMMENT_BODY="**UNVERIFIED COMMIT**\n\nTo maintain a secure environment, commit signing is required. As a result, your commit is going to be reverted until you set up verification.\n\nNeed assistance? Here are some valuable guides:\n\n- Setup by Beneboe\n- Adding a GPG key to your GitHub account"
+          COMMENT_BODY="# UNVERIFIED COMMIT\n\nTo maintain a secure environment, commit signing is required. As a result, your commit is going to be reverted until you set up verification.\n\nNeed assistance? Here are some valuable guides:\n\n- [Setup by Beneboe](https://gist.github.com/Beneboe/3183a8a9eb53439dbee07c90b344c77e#file-how-to-setup-verified-commits-md)\n- [Adding a GPG key to your GitHub account](https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account)"
 
           # Use the GitHub API to add a comment on the original commit
           curl -X POST \
