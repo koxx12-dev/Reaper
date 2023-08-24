@@ -36,7 +36,7 @@ jobs:
           git config --global user.email "actions@github.com"
           
           # Get the original commit message
-          ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD~1)
+          ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD)
   
           # Use Git to create a new revert commit that undoes the changes introduced by the unverified commit
           git revert --no-edit HEAD~1..HEAD
