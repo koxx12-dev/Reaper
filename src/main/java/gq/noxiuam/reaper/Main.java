@@ -53,7 +53,7 @@ public class Main
          * If there is, then it removes it, this is important that this works otherwise it will just write to the old one.
          */
         if (file.exists() && file.delete()) {
-            System.out.println("Removed old mapping file");
+            System.out.println("[Reaper] Removed old mapping file");
         }
 
         // Create a BufferedWriter for the mapping file.
