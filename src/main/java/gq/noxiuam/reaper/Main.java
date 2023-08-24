@@ -59,7 +59,7 @@ public class Main
         // Create a BufferedWriter for the mapping file.
         BufferedWriter writer = new BufferedWriter(new FileWriter(file.getName()));
 
-        System.out.println("[Reaper] Generating mapping...");
+        System.out.println("Generating mapping...");
 
         // Writes a new line until it reaches the maximum amount defined.
         for (int i = 0; i < amount; i++) {
