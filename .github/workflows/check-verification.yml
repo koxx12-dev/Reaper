@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Check if commit is verified
         id: check
         run: |
@@ -29,6 +31,8 @@ jobs:
       - name: Revert commit
         if: steps.check.outputs.verified == 'false'
         run: |
+          git status
+          
           # Get the original commit message
           ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD~1)
   
