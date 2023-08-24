@@ -1,0 +1,64 @@
+name: Verify Commit
+on: push
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if commit is verified
+        id: check
+        run: |
+          # Set the necessary environment variables
+          REPO_FULL_NAME=${{ github.event.repository.full_name }}
+          COMMIT_SHA=${{ github.event.after }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          
+          # Use the GitHub API to retrieve information about the commit that was just pushed
+          COMMIT_DATA=$(curl \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO_FULL_NAME/commits/$COMMIT_SHA")
+          
+          # Check if the commit is verified by looking at the `verification` object in the commit data
+          VERIFIED=$(echo $COMMIT_DATA | jq '.commit.verification.verified')
+          
+          # Set an output variable `verified` to `true` or `false` depending on whether the commit is verified or not
+          echo "::set-output name=verified::$VERIFIED"
+
+      - name: Revert commit
+        if: steps.check.outputs.verified == 'false'
+        run: |
+          # Get the original commit message
+          ORIGINAL_COMMIT_MESSAGE=$(git log -1 --pretty=format:%s HEAD~1)
+  
+          # Use Git to create a new revert commit that undoes the changes introduced by the unverified commit
+          git revert --no-edit HEAD~1..HEAD
+
+          # Amend the revert commit with a custom message
+          git commit --amend -m "Revert (Unverified Commit): $ORIGINAL_COMMIT_MESSAGE"
+
+      - name: Add comment
+        if: steps.check.outputs.verified == 'false'
+        run: |
+          # Set the necessary environment variables
+          REPO_FULL_NAME=${{ github.event.repository.full_name }}
+          COMMIT_SHA=${{ github.event.after }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+          # Set the comment body
+          COMMENT_BODY="**UNVERIFIED COMMIT**\n\nTo maintain a secure environment, commit signing is required. As a result, your commit is going to be reverted until you set up verification.\n\nNeed assistance? Here are some valuable guides:\n\n- Setup by Beneboe\n- Adding a GPG key to your GitHub account"
+
+          # Use the GitHub API to add a comment on the original commit
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -d "{\"body\":\"$COMMENT_BODY\"}" \
+            "https://api.github.com/repos/$REPO_FULL_NAME/commits/$COMMIT_SHA/comments"
+
+      - name: Push changes
+        if: steps.check.outputs.verified == 'false'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
