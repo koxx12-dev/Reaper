@@ -8,9 +8,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Check if commit is a merge or direct push !!!!!!!!
+      - name: Check if commit is a merge or direct push
         id: check_merge
-        if: contains(['refs/heads/master', 'refs/heads/beta', 'refs/heads/dev', 'refs/heads/preview'], github.ref)
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/preview'
         run: |
           # Set the necessary environment variables
           REPO_FULL_NAME=${{ github.event.repository.full_name }}
